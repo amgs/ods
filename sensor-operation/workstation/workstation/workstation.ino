@@ -1,0 +1,64 @@
+#include <Wire.h>
+#include "Ultrasonic.h"
+
+#define RANGE_SENSORS 4
+#define FSR_SENSORS 1
+
+struct Sensor{
+  int id;
+  char type[16];
+  int port;
+};
+
+/**
+ * Range sensors
+ */
+struct Sensor range_sensors[RANGE_SENSORS];
+
+void initialize_range_sensor(int idx, int id, int port) {
+  range_sensors[idx].id = id;
+  range_sensors[idx].port = port;
+  strcpy(range_sensors[idx].type,"UDS");
+}
+
+/**
+ * Force Sensitive Resistors
+ */
+struct Sensor fsr_sensors[FSR_SENSORS];
+
+void initialize_fsr_sensor(int idx, int id, int port) {
+  fsr_sensors[idx].id = id;
+  fsr_sensors[idx].port = port;
+  strcpy(fsr_sensors[idx].type, "FSR");
+}
+
+void setup() {
+  initialize_range_sensor(0, 1, 5);
+  initialize_range_sensor(1, 2, 6);
+  initialize_range_sensor(2, 3, 7);
+  initialize_range_sensor(3, 4, 8);
+  initialize_fsr_sensor(0, 5, A0);
+  Serial.begin(9600);
+}
+
+void loop() {
+  for(int i=0; i<RANGE_SENSORS; i++) {
+    Ultrasonic ultrasonic(range_sensors[i].port);
+    int centimeters = ultrasonic.MeasureInCentimeters();
+    Serial.print(range_sensors[i].id);
+    Serial.print(";");
+    Serial.print(range_sensors[i].type);
+    Serial.print(";");
+    Serial.println(centimeters);
+  }
+
+  for(int i=0; i<FSR_SENSORS; i++) {
+      int fsrreading = analogRead(fsr_sensors[i].port);
+      Serial.print(fsr_sensors[i].id);
+      Serial.print(";");
+      Serial.print(fsr_sensors[i].type);
+      Serial.print(";");
+      Serial.println(fsrreading);
+  }
+  delay(500);
+}
